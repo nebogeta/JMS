@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1897a92c-9323-4b51-96f2-e9766e3a6808" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="5b937713-d554-4385-b20a-435eef9bbe21" />
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="e04312b1-3280-438e-af38-2b827cc6888b" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<jms:config name="JMS_Config1" doc:name="JMS Config" doc:id="a54731dd-daec-4549-8038-b94d3b0cf605" >
+		<jms:active-mq-connection >
+			<jms:caching-strategy >
+				<jms:no-caching />
+			</jms:caching-strategy>
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<flow name="jmsFlow" doc:id="ac4e73bc-c482-4799-93e9-ef10a65edc72" >
+		<http:listener doc:name="Listener" doc:id="2e3a810f-3d07-4473-aabd-0cfce325eba1" config-ref="HTTP_Listener_config" path="/jms"/>
+		<file:read doc:name="Read" doc:id="2e86cb30-05b2-415a-a318-96e4ee544f6a" config-ref="File_Config" path="C:\Users\nebog\OneDrive\Documents\mulesoft\Bulk_insert\Backup\diamonds.csv"/>
+		<jms:publish doc:name="Publish" doc:id="24606ab1-0a10-4c7e-9104-1e0379e8b7dc" config-ref="JMS_Config" destination="my1stMQ"/>
+		<set-payload value="Message Published" doc:name="Set Payload" doc:id="94e3f553-d30b-4063-b8cf-04df1a8771f0" />
+	</flow>
+	<flow name="jmsFlow1" doc:id="d103594c-11c9-40bd-b205-e198e128bf04" >
+		<http:listener doc:name="Listener" doc:id="25d43d97-76cf-4e69-9e7c-39f6ab0ff671" config-ref="HTTP_Listener_config" path="/consume"/>
+		<jms:consume doc:name="Consume" doc:id="b2773399-8c05-49c1-9354-5afccf7026b4" config-ref="JMS_Config" destination="hi">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:consume>
+		<file:write doc:name="Write" doc:id="b8ff2108-bf9d-4a96-a405-da882a693a66" config-ref="File_Config" path="C:\Users\nebog\OneDrive\Documents\mulesoft"/>
+	</flow>
+</mule>
